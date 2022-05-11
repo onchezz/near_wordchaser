@@ -1,13 +1,15 @@
 [package]
-name = "near-smart-contract-rust-template"
+name = "near_wordchaser"
 version = "0.1.0"
 edition = "2021"
-authors = ["Jacob Lindahl <jacob@near.foundation>"]
+authors = ["onchez brian <brianonchezz@gmail.com>"]
 
 [dependencies]
 near-sdk = "4.0.0-pre.7"
 near-contract-standards = "4.0.0-pre.7"
-
+serde = { version = "1.0.104", features = ["derive"] }
+serde_json = "1.0.48"
+quad-rand = "0.2.1"
 [lib]
 crate-type = ["cdylib"]
 
