@@ -1,13 +1,40 @@
-# NEAR Smart Contract Rust Template
+# NEAR Wordchaser Smart Contract
 
-Project structure for writing smart contracts in Rust for NEAR Protocol
+This is game smart contract  
+ to test your english knowledge to know words that lets you choose a word then gives an exaple and an explanation and you can give a solution from the example and meaning given
 
-# Required Software
+## Prerequisites
 
-- Rust 1.58 + cargo
-- Node.js
-- NEAR CLI 3.1
+Ensure `near-cli` is installed by running:
 
-# Authors
+```
+near --version
+```
 
-- Jacob Lindahl <jacob@near.foundation> [@sudo_build](https://twitter.com/sudo_build)
+If needed, install `near-cli`:
+
+```
+npm install near-cli -g
+```
+
+Ensure `Rust` is installed by running:
+
+```
+rustc --version
+```
+
+If needed, install `Rust`:
+
+```
+curl https://sh.rustup.rs -sSf | sh
+```
+
+Install dependencies
+
+```
+npm install
+```
+
+#### Author
+
+- onchez brian <brianonchezz@gmail.com> [@onchez](https://twitter.com/onchezz_2)
