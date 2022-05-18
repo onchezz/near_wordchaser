@@ -33,3 +33,25 @@ pub fn how_to_play_json() -> serde_json::Value {
     ]);
   playinfo
 }
+
+
+
+
+
+
+// use near_rng::Rng;
+
+// #[near_bindgen]
+// #[derive(Default, BorshDeserialize, BorshSerialize)]
+// pub struct Counter {
+//   val: i32,
+// }
+
+// #[near_bindgen]
+// impl Counter {
+//   pub fn increment(&mut self) {
+//     let mut rng = Rng::new(&env::random_seed());
+//     let value = rng.rand_range_i32(0, 20);
+//     self.val += value;
+//   }
+// }

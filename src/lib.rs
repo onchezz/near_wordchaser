@@ -8,15 +8,34 @@ use near_sdk::{
 mod data;
 mod how_play;
 
+use near_rng::Rng;
+
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Clone, Debug)] //PartialEq
+#[derive(Default, BorshDeserialize, BorshSerialize)]
+pub struct Counter {
+  val: i32,
+}
+
+#[near_bindgen]
+impl Counter {
+  pub fn increment(&mut self) {
+    let mut rng = Rng::new(&env::random_seed());
+    let value = rng.rand_range_i32(0, 20);
+    self.val += value;
+  }
+}
+
+#[near_bindgen]
+#[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Clone, Debug)]
 pub struct Info {
   info: String,
   description: String,
   method: String,
 }
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(
+  BorshDeserialize, BorshSerialize, Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+)]
 #[serde(crate = "near_sdk::serde")]
 #[serde(rename_all = "camelCase")]
 pub struct Vocabulary {
@@ -123,8 +142,8 @@ impl Default for Player {
   fn default() -> Self {
     Self {
       userid: String::from("word.test"),
-      guess: String::from("welcome 💖"),
-      word_progress: String::from("_ _ _"),
+      guess: String::from("near"),
+      word_progress: String::from(" _ _ _ _"),
       completed: Vec::new(),
       // UnorderedMap::new(b"w"),
       turns: 0,
@@ -184,7 +203,7 @@ impl Player {
     }
   }
 
-  pub fn view_uncompleted_words(&mut self) -> Option<Vec<Vocabulary>> {
+  pub fn view_available_words(&mut self) -> Option<Vec<Vocabulary>> {
     /*this function creates vocabularies with hidden words for the player crack
     eg ..
      {
@@ -227,7 +246,7 @@ impl Player {
   }
 
   /*this is a function to generate a random word with range to index to play with  */
-  pub fn random_word(&mut self, num: usize) -> Result<Vocabulary, Info> {
+  pub fn random_word(&mut self) -> Result<Vocabulary, Info> {
     //saving words to a vector of type ::word which is a struct
     let account_id = env::signer_account_id();
     let user = String::from(account_id);
@@ -235,25 +254,28 @@ impl Player {
       self.userid = user;
     }
     match self.get_data() {
-      Some(words) => match words.get(num) {
-        Some(w) => {
-          let mut w = w.clone();
-          let unknown_word = w.create_unknown_word();
-          self.guess = w.word;
-          self.turns = self.guess.len() as u64;
-          self.is_revealed = false;
-          return Ok(unknown_word);
+      Some(words) => {
+        let index = self.random_index(words.len());
+        match words.get(index) {
+          Some(w) => {
+            let mut w = w.clone();
+            let unknown_word = w.create_unknown_word();
+            self.guess = w.word;
+            self.turns = self.guess.len() as u64;
+            self.is_revealed = false;
+            return Ok(unknown_word);
+          }
+          None => {
+            let msg = format!("please chooose a number between 0 and {}", words.len() - 1);
+            let i = Info {
+              info: "Error".to_string(),
+              description: msg,
+              method: "random_word".to_string(),
+            };
+            return Err(i);
+          }
         }
-        None => {
-          let msg = format!("please chooose a number between 0 and {}", words.len() - 1);
-          let i = Info {
-            info: "Error".to_string(),
-            description: msg,
-            method: "random_word".to_string(),
-          };
-          return Err(i);
-        }
-      },
+      }
       None => {
         let msg = format!("failed to get words from json ",);
         let i = Info {
@@ -348,14 +370,19 @@ impl Player {
       )),
     }
   }
+
+  pub fn random_index(&self, max: usize) -> usize {
+    let mut rng = Rng::new(&env::random_seed());
+    let max_len = max as u64;
+    let b = rng.rand_range_u64(0, max_len);
+    b as usize
+  }
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
   use near_sdk::test_utils::VMContextBuilder;
-  // use near_sdk::MockedBlockchain;
-  // use near_sdk::{log, testing_env, VMContext};
   use near_sdk::{log, testing_env, AccountId, VMContext};
 
   const ONE_NEAR: u128 = u128::pow(10, 24);
@@ -520,15 +547,15 @@ mod tests {
     /*
     the view_uncompleted_words function returns a vector of hidden words where it is not empty
     */
-    let uncompleted = p.view_uncompleted_words().unwrap();
+    let uncompleted = p.view_available_words().unwrap();
     assert!(!uncompleted.is_empty());
   }
 
   #[test]
-  fn test_random_word_is_picked_at_correct_index() {
+  fn test_random_word_is_picked_randomly() {
     let accountid = AccountId::new_unchecked("onchez.test".to_string());
     let context = get_context(accountid);
-    let player_id = String::from(context.signer_account_id.clone());
+    // let player_id = String::from(context.signer_account_id.clone());
     testing_env!(context);
     //creating a new user instance
     let mut p = Player {
@@ -540,15 +567,14 @@ mod tests {
       is_revealed: false,
     };
     //this gets data at a certain index and  shows that it creats data from that index
-    let index = 1;
-    let random = p.random_word(index).unwrap();
-    let data = p.get_data().unwrap()[index].clone();
+    /*
+    this  function get_random_word  fom an unknown index  randomly  we assert if the random word is availabele in the available_words vector
 
-    assert_eq!(random.meaning, data.meaning);
-    /*the random word function hides the  word  from data but saves in the current user  guess  */
-    if p.userid == player_id {
-      assert_eq!(p.guess, data.word);
-    }
+    */
+    let random = p.random_word().unwrap();
+    let unkwon_words_data: Vec<Vocabulary> = p.view_available_words().unwrap();
+
+    assert!(unkwon_words_data.contains(&random))
   }
 
   #[test]
@@ -568,7 +594,7 @@ mod tests {
       is_revealed: false,
     };
     let input_solution = "Near".to_string();
-    p.random_word(0).unwrap();
+    p.random_word().unwrap();
     //checks the solution if is the same as the word and returns status message
 
     let result = p.check_solution(input_solution);
@@ -652,5 +678,23 @@ mod tests {
     });
 
     assert_eq!(p.completed.len(), 3)
+  }
+  #[test]
+  fn test_random_index() {
+    let accountid = AccountId::new_unchecked("onchez.test".to_string());
+    let context = get_context(accountid);
+    testing_env!(context);
+    let p = Player {
+      userid: "onchez.testnet".to_string(),
+      guess: String::from("Near"),
+      word_progress: String::from("_ _ _"),
+      completed: Vec::new(),
+      turns: 0,
+      is_revealed: false,
+    };
+    /*this function asserts that the give index doesn't exceed the maxmum number give */
+    let max_lenth = 25 as usize;
+    let index: usize = p.random_index(max_lenth);
+    assert_eq!(max_lenth, index.max(max_lenth));
   }
 }

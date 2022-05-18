@@ -35,6 +35,8 @@ Install dependencies
 npm install
 ```
 
+app.onchez.testnet
+
 #### Author
 
 - onchez brian <brianonchezz@gmail.com> [@onchez](https://twitter.com/onchezz_2)

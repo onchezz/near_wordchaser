@@ -575,6 +575,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "near-rng"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1efd376ff92ef9c5ef550f808406056854815f10e046703ae97f61946ef53a12"
+
+[[package]]
 name = "near-rpc-error-core"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -675,6 +681,7 @@ name = "near_wordchaser"
 version = "0.1.0"
 dependencies = [
  "near-contract-standards",
+ "near-rng",
  "near-sdk",
  "serde",
  "serde_json",
