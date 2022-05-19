@@ -35,7 +35,17 @@ Install dependencies
 npm install
 ```
 
-app.onchez.testnet
+To start the game
+
+```
+near call app.onchez.testnet  how_to_play --accountId   Your accountId
+```
+
+To get a random word
+
+```
+near call app.onchez.testnet  random_word --accountId   Your accountId
+```
 
 #### Author
 

@@ -11,21 +11,6 @@ mod how_play;
 use near_rng::Rng;
 
 #[near_bindgen]
-#[derive(Default, BorshDeserialize, BorshSerialize)]
-pub struct Counter {
-  val: i32,
-}
-
-#[near_bindgen]
-impl Counter {
-  pub fn increment(&mut self) {
-    let mut rng = Rng::new(&env::random_seed());
-    let value = rng.rand_range_i32(0, 20);
-    self.val += value;
-  }
-}
-
-#[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Clone, Debug)]
 pub struct Info {
   info: String,
@@ -162,7 +147,7 @@ impl Player {
     let words: Vec<Vocabulary> = serde_json::from_value(data).expect("erro giving json");
     Some(words)
   }
-
+  //this function fetches jsdon data on how to play  the game   then saves it in vector  if it exits
   fn playinfo(&mut self) -> Option<Vec<Info>> {
     let playinfo = how_play::how_to_play_json();
     let how_play: Vec<Info> = serde_json::from_value(playinfo).expect("unable to get playing info");
@@ -211,27 +196,21 @@ impl Player {
         meaning: 'concurrence of opinion',
         word: '   _ _ _ _ _ _'
       },
-      */
-    let account_id = env::signer_account_id();
-    let user = String::from(account_id);
+    */
+
     let words = self.get_data();
     match words {
       Some(mut words) => {
         let mut display_unknown_words: Vec<Vocabulary> = Vec::new();
 
-        for word in words.iter_mut() {
+        for word_index in 0..words.len() {
+          let word = &mut words[word_index];
           let unknown_word = word.create_unknown_word();
-          if !self.completed.is_empty() {
-            if self.userid == user {
-              for compl in self.completed.iter_mut() {
-                if word.word == compl.word {
-                  let insert_word = word.to_owned();
-                  display_unknown_words.push(insert_word);
-                }
-              }
+          display_unknown_words.push(unknown_word);
+          for completed_words in self.completed.iter() {
+            if word.word == completed_words.word {
+              display_unknown_words.insert(word_index, word.clone())
             }
-          } else {
-            display_unknown_words.push(unknown_word);
           }
         }
         log!("please chooose a number between 0 and {}", words.len() - 1);
@@ -371,7 +350,7 @@ impl Player {
     }
   }
 
-  pub fn random_index(&self, max: usize) -> usize {
+  fn random_index(&self, max: usize) -> usize {
     let mut rng = Rng::new(&env::random_seed());
     let max_len = max as u64;
     let b = rng.rand_range_u64(0, max_len);
@@ -571,10 +550,12 @@ mod tests {
     this  function get_random_word  fom an unknown index  randomly  we assert if the random word is availabele in the available_words vector
 
     */
+    let data = p.get_data().unwrap();
     let random = p.random_word().unwrap();
-    let unkwon_words_data: Vec<Vocabulary> = p.view_available_words().unwrap();
+    //the random index function takes in a maxmum  index of usize
+    let random_index = p.random_index(data.len());
 
-    assert!(unkwon_words_data.contains(&random))
+    assert_eq!(random.meaning, data[random_index].meaning);
   }
 
   #[test]
