@@ -1,4 +1,4 @@
-use chrono::{Date, Utc};
+use chrono::{DateTime, Local, Utc};
 use near_rng::Rng;
 use near_sdk::{
   borsh::{self, BorshDeserialize, BorshSerialize},
@@ -109,6 +109,8 @@ pub struct CompletedWord {
   word: String,
   status: String,
   trials_completed_at: String,
+
+  compled_at: String,
 }
 
 #[near_bindgen]
@@ -281,10 +283,12 @@ impl Player {
         // we are matching if the user account exixts
         match self.check_progress(self.turns, &revealed_letters) {
           Status::Completed => {
+            let compled_at = Utc::now().to_string();
             self.completed.push(CompletedWord {
               word: String::from(&self.guess),
               status: String::from("completed"),
               trials_completed_at: String::from(format!("{} trials", self.turns)),
+              compled_at: compled_at,
             });
 
             let msg = format!("Congulatulations you won !!! ",);
@@ -363,8 +367,9 @@ impl Player {
         let readable_bal = balance / ONE_NEAR;
         if readable_bal > 1 {
           let transfer = Promise::new(contract_id).transfer(ONE_NEAR);
-          self.turns + 10;
+          self.turns = self.turns + 10;
           let msg = format!("balance {}, turn {}", readable_bal, self.turns);
+          env::log_str(&msg);
           Ok(transfer)
         } else {
           let err = format!("you dont't have enough balance ");
@@ -540,7 +545,7 @@ mod tests {
   fn view_uncompleted_words() {
     let accountid = AccountId::new_unchecked("onchez.test".to_string());
     let context = get_context(accountid);
-    // let player_id = String::from(context.signer_account_id.clone());
+
     testing_env!(context);
     //creating a new user instance
     let mut p = Player {
@@ -670,20 +675,24 @@ mod tests {
       turns: 0,
       is_revealed: false,
     };
+    let compled_at = Utc::now().to_string();
     p.completed.push(CompletedWord {
       word: String::from("near"),
       status: String::from("completed"),
       trials_completed_at: String::from("near"),
+      compled_at: String::from(&compled_at),
     });
     p.completed.push(CompletedWord {
       word: String::from("near"),
       status: String::from("completed"),
       trials_completed_at: String::from("near"),
+      compled_at: String::from(&compled_at),
     });
     p.completed.push(CompletedWord {
       word: String::from("near"),
       status: String::from("completed"),
       trials_completed_at: String::from("completed"),
+      compled_at: String::from(&compled_at),
     });
 
     assert_eq!(p.completed.len(), 3)
@@ -705,5 +714,25 @@ mod tests {
     let max_lenth = 25 as usize;
     let index: usize = p.random_index(max_lenth);
     assert_eq!(max_lenth, index.max(max_lenth));
+  }
+  #[test]
+  fn test_buy_more_turn() {
+    let accountid = AccountId::new_unchecked("onchez.test".to_string());
+    let context = get_context(accountid);
+    let player_id = String::from(context.signer_account_id.clone());
+    testing_env!(context);
+    let mut p = Player {
+      userid: "onchez.testnet".to_string(),
+      guess: String::from("Near"),
+      word_progress: String::from("_ _ _"),
+      completed: Vec::new(),
+      turns: 0,
+      is_revealed: false,
+    };
+    let trasaction = p.add_more_turns();
+    if player_id == p.userid {
+      assert!(trasaction.is_ok())
+    }
+    assert!(trasaction.is_err())
   }
 }
