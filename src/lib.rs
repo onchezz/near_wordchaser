@@ -1,4 +1,4 @@
-use chrono::{DateTime, Local, Utc};
+use chrono::Utc;
 use near_rng::Rng;
 use near_sdk::{
   borsh::{self, BorshDeserialize, BorshSerialize},
@@ -338,7 +338,7 @@ impl Player {
     }
   }
   /*gets the complete words  */
-  pub fn view_completed(&self) -> Result<&Vec<CompletedWord>, String> {
+  pub fn view_saved(&self) -> Result<&Vec<CompletedWord>, String> {
     let account_id = env::signer_account_id();
     let user = String::from(account_id);
     match self.userid == user {
@@ -366,11 +366,8 @@ impl Player {
         env::log_str(&balance.to_string());
         let readable_bal = balance / ONE_NEAR;
         if readable_bal > 1 {
-          let transfer = Promise::new(contract_id).transfer(ONE_NEAR);
           self.turns = self.turns + 10;
-          let msg = format!("balance {}, turn {}", readable_bal, self.turns);
-          env::log_str(&msg);
-          Ok(transfer)
+          Ok(Promise::new(contract_id).transfer(ONE_NEAR))
         } else {
           let err = format!("you dont't have enough balance ");
           Err(err)

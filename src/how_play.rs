@@ -12,7 +12,7 @@ pub fn how_to_play_json() -> serde_json::Value {
   {
     "info": "To check completed words ",
     "description": " this function views completed words",
-    "method": "view_completed"
+    "method": "view_saved"
   },
   {
     "info": "To view available words ",
