@@ -1,14 +1,13 @@
+use chrono::{Date, Utc};
+use near_rng::Rng;
 use near_sdk::{
   borsh::{self, BorshDeserialize, BorshSerialize},
   env, log, near_bindgen,
   serde::{Deserialize, Serialize},
-  serde_json,
+  serde_json, Promise,
 };
-
 mod data;
 mod how_play;
-
-use near_rng::Rng;
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, Deserialize, Serialize, Clone, Debug)]
@@ -209,16 +208,18 @@ impl Player {
           display_unknown_words.push(unknown_word);
           for completed_words in self.completed.iter() {
             if word.word == completed_words.word {
+              display_unknown_words.remove(word_index);
               display_unknown_words.insert(word_index, word.clone())
             }
           }
         }
-        log!("please chooose a number between 0 and {}", words.len() - 1);
+
         Some(display_unknown_words)
       }
 
       None => {
         log!("failed to create words");
+
         None
       }
     }
@@ -277,7 +278,7 @@ impl Player {
         let mut revealed_letters = Letter::reveal_letters(&mut w, word);
         self.word_progress = Letter::display_progress(&mut revealed_letters);
         /*it takes all the iterator in the letters vector and creats a single iterator thats iterates through all of the letters cheking if the user revealed the letter  and returns true if the letters are revealed*/
-
+        // we are matching if the user account exixts
         match self.check_progress(self.turns, &revealed_letters) {
           Status::Completed => {
             self.completed.push(CompletedWord {
@@ -286,12 +287,12 @@ impl Player {
               trials_completed_at: String::from(format!("{} trials", self.turns)),
             });
 
-            let msg = format!("Huree you won !!!",);
+            let msg = format!("Congulatulations you won !!! ",);
             Ok(msg)
           }
           Status::Inprogress => {
             let msg = format!(
-              "Progress {} tials remaining {}:trials",
+              "Progress {}      {}:trials remaining",
               &self.word_progress, &self.turns,
             );
             self.turns -= 1;
@@ -299,7 +300,7 @@ impl Player {
           }
           Status::Failed => {
             let msg = format!(
-              "Sorry you Lost the Game  {} tials remaining {}:trials",
+              "Sorry you Lost the Game  {}    {}:trials remaining",
               &self.word_progress, &self.turns
             );
             Ok(msg)
@@ -349,6 +350,33 @@ impl Player {
       )),
     }
   }
+  pub fn add_more_turns(&mut self) -> Result<Promise, String> {
+    const ONE_NEAR: u128 = u128::pow(10, 24);
+
+    let account_id = env::signer_account_id();
+    let user = String::from(account_id.clone());
+    let contract_id = env::current_account_id();
+    match user == self.userid {
+      true => {
+        let balance = env::account_balance();
+        env::log_str(&balance.to_string());
+        let readable_bal = balance / ONE_NEAR;
+        if readable_bal > 1 {
+          let transfer = Promise::new(contract_id).transfer(ONE_NEAR);
+          self.turns + 10;
+          let msg = format!("balance {}, turn {}", readable_bal, self.turns);
+          Ok(transfer)
+        } else {
+          let err = format!("you dont't have enough balance ");
+          Err(err)
+        }
+      }
+      false => {
+        let err = format!("failed to get account");
+        Err(err)
+      }
+    }
+  }
 
   fn random_index(&self, max: usize) -> usize {
     let mut rng = Rng::new(&env::random_seed());
@@ -362,7 +390,7 @@ impl Player {
 mod tests {
   use super::*;
   use near_sdk::test_utils::VMContextBuilder;
-  use near_sdk::{log, testing_env, AccountId, VMContext};
+  use near_sdk::{env, testing_env, AccountId, VMContext};
 
   const ONE_NEAR: u128 = u128::pow(10, 24);
 
@@ -393,8 +421,8 @@ mod tests {
     };
 
     let hidden_word = word.create_unknown_word();
-    log!("{:#?}", hidden_word);
-
+    let msg = format!("{:#?}", hidden_word);
+    env::log_str(&msg);
     assert_eq!(hidden_word.example, "deploying a  _ _ _ _ _ _ _ _ _ _ _ _ _ to a near blockchain is easy and the  _ _ _ _ _ _ _ _ _ _ _ _ _ is faster other chains.");
     assert_eq!(hidden_word.meaning, "code that lives on the blockchain");
     assert_eq!(hidden_word.word, " _ _ _ _ _ _ _ _ _ _ _ _ _");

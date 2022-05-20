@@ -10,7 +10,7 @@ near-contract-standards = "4.0.0-pre.7"
 serde = { version = "1.0.104", features = ["derive"] }
 serde_json = "1.0.48"
 near-rng = "0.1.1"
-
+chrono = "0.4.19"
 
 [lib]
 crate-type = ["cdylib"]

@@ -23,7 +23,7 @@ Ensure `Rust` is installed by running:
 rustc --version
 ```
 
-If needed, install `Rust`:
+If needed, install [`Rust`]():
 
 ```
 curl https://sh.rustup.rs -sSf | sh
@@ -45,6 +45,18 @@ To get a random word
 
 ```
 near call app.onchez.testnet  random_word --accountId   Your accountId
+```
+
+To view completed words
+
+```
+near call app.onchez.testnet  view_uncompleted_words --accountId   Your accountId
+```
+
+To check solution
+
+```
+near call app.onchez.testnet  check_solution '{"word":"you_solution"}'--accountId   Your accountId
 ```
 
 #### Author
