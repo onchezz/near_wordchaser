@@ -1,4 +1,3 @@
-use chrono::Utc;
 use near_rng::Rng;
 use near_sdk::{
   borsh::{self, BorshDeserialize, BorshSerialize},
@@ -109,8 +108,6 @@ pub struct CompletedWord {
   word: String,
   status: String,
   trials_completed_at: String,
-
-  compled_at: String,
 }
 
 #[near_bindgen]
@@ -209,8 +206,10 @@ impl Player {
           let unknown_word = word.create_unknown_word();
           display_unknown_words.push(unknown_word);
           for completed_words in self.completed.iter() {
+            //this function checks if the  word is revealed by the user and shows it
             if word.word == completed_words.word {
               display_unknown_words.remove(word_index);
+
               display_unknown_words.insert(word_index, word.clone())
             }
           }
@@ -235,6 +234,7 @@ impl Player {
     if user != self.userid {
       self.userid = user;
     }
+    //matches if there is data found on the  from json and matches some  else it returns an error
     match self.get_data() {
       Some(words) => {
         let index = self.random_index(words.len());
@@ -283,12 +283,10 @@ impl Player {
         // we are matching if the user account exixts
         match self.check_progress(self.turns, &revealed_letters) {
           Status::Completed => {
-            let compled_at = Utc::now().to_string();
             self.completed.push(CompletedWord {
               word: String::from(&self.guess),
               status: String::from("completed"),
               trials_completed_at: String::from(format!("{} trials", self.turns)),
-              compled_at: compled_at,
             });
 
             let msg = format!("Congulatulations you won !!! ",);
@@ -354,6 +352,8 @@ impl Player {
       )),
     }
   }
+
+  // this function adds
   pub fn add_more_turns(&mut self) -> Result<Promise, String> {
     const ONE_NEAR: u128 = u128::pow(10, 24);
 
@@ -363,10 +363,15 @@ impl Player {
     match user == self.userid {
       true => {
         let balance = env::account_balance();
-        env::log_str(&balance.to_string());
+        env::log_str(&(balance / ONE_NEAR).to_string());
         let readable_bal = balance / ONE_NEAR;
         if readable_bal > 1 {
           self.turns = self.turns + 10;
+          let msg = format!(
+            "congrats  you added more  turns  {}turns available ",
+            self.turns
+          );
+          env::log_str(&msg);
           Ok(Promise::new(contract_id).transfer(ONE_NEAR))
         } else {
           let err = format!("you dont't have enough balance ");
@@ -379,7 +384,7 @@ impl Player {
       }
     }
   }
-
+  // this generates a random index to generate a random wornd in the random_word function
   fn random_index(&self, max: usize) -> usize {
     let mut rng = Rng::new(&env::random_seed());
     let max_len = max as u64;
@@ -672,24 +677,21 @@ mod tests {
       turns: 0,
       is_revealed: false,
     };
-    let compled_at = Utc::now().to_string();
+
     p.completed.push(CompletedWord {
       word: String::from("near"),
       status: String::from("completed"),
       trials_completed_at: String::from("near"),
-      compled_at: String::from(&compled_at),
     });
     p.completed.push(CompletedWord {
       word: String::from("near"),
       status: String::from("completed"),
       trials_completed_at: String::from("near"),
-      compled_at: String::from(&compled_at),
     });
     p.completed.push(CompletedWord {
       word: String::from("near"),
       status: String::from("completed"),
       trials_completed_at: String::from("completed"),
-      compled_at: String::from(&compled_at),
     });
 
     assert_eq!(p.completed.len(), 3)

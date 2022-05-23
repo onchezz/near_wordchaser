@@ -680,7 +680,6 @@ dependencies = [
 name = "near_wordchaser"
 version = "0.1.0"
 dependencies = [
- "chrono",
  "near-contract-standards",
  "near-rng",
  "near-sdk",

@@ -1,9 +1,8 @@
 # NEAR Wordchaser Smart Contract
 
-This is game smart contract  
- to test your english knowledge to know words that lets you choose a word then gives an exaple and an explanation and you can give a solution from the example and meaning given
+This is game smart contract to test your english knowledge to know words that lets you choose a word then gives an exmaple and meaning you can give a solution from the example and meaning given
 
-## Prerequisites
+## Tools Required
 
 Ensure `near-cli` is installed by running:
 
@@ -23,40 +22,55 @@ Ensure `Rust` is installed by running:
 rustc --version
 ```
 
-If needed, install [`Rust`]():
+If needed, install [Rust](https://www.rust-lang.org/tools/install):
+
+## file Layout
 
 ```
-curl https://sh.rustup.rs -sSf | sh
+Root Folder
+├── contract
+│   ├── build.sh
+│   ├── Cargo.lock
+│   ├── Cargo.toml
+│   ├── src
+|   |   ├── data.rs
+|   |   ├── how_play.rs
+|   |   └── lib.rs
+│   └── test.sh
+└── README.md
+
 ```
 
-Install dependencies
-
-```
-npm install
-```
+## Game Function Calls
 
 To start the game
 
 ```
-near call app.onchez.testnet  how_to_play --accountId   Your accountId
+near call word.onchez.testnet  how_to_play --accountId   Your accountId
 ```
 
 To get a random word
 
 ```
-near call app.onchez.testnet  random_word --accountId   Your accountId
+near call word.onchez.testnet  random_word --accountId   Your accountId
 ```
 
 To view completed words
 
 ```
-near call app.onchez.testnet  view_uncompleted_words --accountId   Your accountId
+near call word.onchez.testnet  view_available_words --accountId   Your accountId
 ```
 
 To check solution
 
 ```
-near call app.onchez.testnet  check_solution '{"word":"you_solution"}'--accountId   Your accountId
+near call word.onchez.testnet  check_solution '{"word":"you_solution"}'--accountId   Your accountId
+```
+
+To add more tunrs in the game charge 1near per 10 turns added
+
+```
+near call word.onchez.testnet  check_solution  add_more_turns --accountId   Your accountId
 ```
 
 #### Author
