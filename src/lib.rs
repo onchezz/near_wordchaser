@@ -237,6 +237,7 @@ impl Player {
     //matches if there is data found on the  from json and matches some  else it returns an error
     match self.get_data() {
       Some(words) => {
+        //this is the mximum index for generating the random word
         let index = self.random_index(words.len());
         match words.get(index) {
           Some(w) => {
@@ -363,7 +364,6 @@ impl Player {
     match user == self.userid {
       true => {
         let balance = env::account_balance();
-        env::log_str(&(balance / ONE_NEAR).to_string());
         let readable_bal = balance / ONE_NEAR;
         if readable_bal > 1 {
           self.turns = self.turns + 10;
@@ -372,6 +372,8 @@ impl Player {
             self.turns
           );
           env::log_str(&msg);
+
+          env::log_str(&(balance / ONE_NEAR).to_string());
           Ok(Promise::new(contract_id).transfer(ONE_NEAR))
         } else {
           let err = format!("you dont't have enough balance ");

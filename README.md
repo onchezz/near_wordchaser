@@ -70,7 +70,7 @@ near call word.onchez.testnet  check_solution '{"word":"you_solution"}'--account
 To add more tunrs in the game charge 1near per 10 turns added
 
 ```
-near call word.onchez.testnet  check_solution  add_more_turns --accountId   Your accountId
+near call word.onchez.testnet   add_more_turns --accountId   Your accountId
 ```
 
 #### Author
