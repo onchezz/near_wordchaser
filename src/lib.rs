@@ -283,10 +283,9 @@ impl Player {
         self.word_progress = Letter::display_progress(&mut revealed_letters);
         /*it takes all the iterator in the letters vector and creats a single iterator thats iterates through all of the letters cheking if the user revealed the letter  and returns true if the letters are revealed*/
         // we are matching if the user account exixts
+        let stamp = env::block_timestamp() as i64;
         match self.check_progress(self.turns, &revealed_letters) {
           Status::Completed => {
-            let stamp = env::block_timestamp() as i64;
-
             let time = Utc
               .timestamp_nanos(stamp)
               .format("%a %b %e %T %Y")
@@ -311,6 +310,17 @@ impl Player {
             Ok(msg)
           }
           Status::Failed => {
+            let time = Utc
+              .timestamp_nanos(stamp)
+              .format("%a %b %e %T %Y")
+              .to_string();
+
+            self.completed.push(CompletedWord {
+              word: String::from(&self.word_progress),
+              status: String::from("failed"),
+              trials_completed_at: format!("{} trials", self.turns),
+              completed_at: format!("lost at {}", time),
+            });
             let msg = format!(
               "Sorry you Lost the Game  {}    {}:trials remaining",
               &self.word_progress, &self.turns
