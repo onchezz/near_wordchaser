@@ -1,3 +1,4 @@
+use chrono::prelude::*;
 use near_rng::Rng;
 use near_sdk::{
   borsh::{self, BorshDeserialize, BorshSerialize},
@@ -108,18 +109,19 @@ pub struct CompletedWord {
   word: String,
   status: String,
   trials_completed_at: String,
+  completed_at: String,
 }
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, Serialize, Deserialize)]
 #[serde(crate = "near_sdk::serde")]
 pub struct Player {
-  userid: String,
-  guess: String,
-  word_progress: String,
-  completed: Vec<CompletedWord>,
-  turns: u64,
-  is_revealed: bool,
+  pub userid: String,
+  pub guess: String,
+  pub word_progress: String,
+  pub completed: Vec<CompletedWord>,
+  pub turns: u64,
+  pub is_revealed: bool,
 }
 impl Default for Player {
   fn default() -> Self {
@@ -128,7 +130,6 @@ impl Default for Player {
       guess: String::from("near"),
       word_progress: String::from(" _ _ _ _"),
       completed: Vec::new(),
-      // UnorderedMap::new(b"w"),
       turns: 0,
       is_revealed: false,
     }
@@ -151,10 +152,9 @@ impl Player {
     let how_play: Vec<Info> = serde_json::from_value(playinfo).expect("unable to get playing info");
     Some(how_play)
   }
-
+  //this function gives an overview on how to play the game
   pub fn how_to_play(&mut self) -> Result<Vec<Info>, &str> {
     let mut how_to_play: Vec<Info> = Vec::new();
-    let words = self.get_data().unwrap();
     let info = self.playinfo();
     let account = env::signer_account_id();
     let user = String::from(account);
@@ -166,15 +166,16 @@ impl Player {
       true => Ok(info.unwrap()),
       false => match info {
         Some(info) => {
-          let desc = format!(
-            "To start the game call random_word and choose any number from 0 and {}",
-            words.len() - 1
-          );
+          // splting to get only the user name without ".near" or ".testnet" for the user name
+          let username: Vec<&str> = user.split('.').collect();
           let wel = Info {
-            info: format!("welcome  {}", user),
-            description: desc,
+            info: format!("{} \n welcome  {}", WELCOME, username[0]),
+            description:
+              "To  start the  game call  the random_word to get a word randomly to play with "
+                .to_string(),
             method: "random_word".to_string(),
           };
+          //pushing a welcome info if the user is new to the game
           how_to_play.push(wel);
           for i in 0..info.len() {
             how_to_play.push(info[i].clone());
@@ -284,10 +285,18 @@ impl Player {
         // we are matching if the user account exixts
         match self.check_progress(self.turns, &revealed_letters) {
           Status::Completed => {
+            let stamp = env::block_timestamp() as i64;
+
+            let time = Utc
+              .timestamp_nanos(stamp)
+              .format("%a %b %e %T %Y")
+              .to_string();
+
             self.completed.push(CompletedWord {
               word: String::from(&self.guess),
               status: String::from("completed"),
               trials_completed_at: String::from(format!("{} trials", self.turns)),
+              completed_at: time,
             });
 
             let msg = format!("Congulatulations you won !!! ",);
@@ -354,7 +363,7 @@ impl Player {
     }
   }
 
-  // this function adds
+  // this function adds more turns for the current word
   pub fn add_more_turns(&mut self) -> Result<Promise, String> {
     const ONE_NEAR: u128 = u128::pow(10, 24);
 
@@ -388,6 +397,7 @@ impl Player {
   }
   // this generates a random index to generate a random wornd in the random_word function
   fn random_index(&self, max: usize) -> usize {
+    //getting an rng from random seed
     let mut rng = Rng::new(&env::random_seed());
     let max_len = max as u64;
     let b = rng.rand_range_u64(0, max_len);
@@ -679,24 +689,28 @@ mod tests {
       turns: 0,
       is_revealed: false,
     };
-
+    let stamp = env::block_timestamp() as i64;
+    let time = Utc.timestamp_nanos(stamp).format("%a %b %e %T %Y");
     p.completed.push(CompletedWord {
       word: String::from("near"),
       status: String::from("completed"),
       trials_completed_at: String::from("near"),
+      completed_at: time.to_string(),
     });
     p.completed.push(CompletedWord {
       word: String::from("near"),
       status: String::from("completed"),
       trials_completed_at: String::from("near"),
+      completed_at: time.to_string(),
     });
     p.completed.push(CompletedWord {
       word: String::from("near"),
       status: String::from("completed"),
       trials_completed_at: String::from("completed"),
+      completed_at: time.to_string(),
     });
 
-    assert_eq!(p.completed.len(), 3)
+    assert_eq!(p.completed.len(), 3);
   }
   #[test]
   fn test_random_index() {
@@ -737,3 +751,8 @@ mod tests {
     assert!(trasaction.is_err())
   }
 }
+
+const WELCOME: &str = r#"
+╦ ╦╔═╗╦═╗╔╦╗╔═╗╦ ╦╔═╗╔═╗╔═╗╦═╗  
+║║║║ ║╠╦╝ ║║║  ╠═╣╠═╣╚═╗║╣ ╠╦╝  
+╚╩╝╚═╝╩╚══╩╝╚═╝╩ ╩╩ ╩╚═╝╚═╝╩╚═ "#;

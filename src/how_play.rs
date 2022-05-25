@@ -1,5 +1,4 @@
 use serde_json::json;
-
 //this function creates  initial random data for  the wordchaser game
 //this immitates a simple rest api for json respond
 pub fn how_to_play_json() -> serde_json::Value {
@@ -38,3 +37,10 @@ pub fn how_to_play_json() -> serde_json::Value {
       ]);
   playinfo
 }
+
+//  _    _  _____ ______ ______  _____  _   _   ___   _____  _____ ______
+// | |  | ||  _  || ___ \|  _  \/  __ \| | | | / _ \ /  ___||  ___|| ___ \
+// | |  | || | | || |_/ /| | | || /  \/| |_| |/ /_\ \\ `--. | |__  | |_/ /
+// | |/\| || | | ||    / | | | || |    |  _  ||  _  | `--. \|  __| |    /
+// \  /\  /\ \_/ /| |\ \ | |/ / | \__/\| | | || | | |/\__/ /| |___ | |\ \
+//  \/  \/  \___/ \_| \_||___/   \____/\_| |_/\_| |_/\____/ \____/ \_| \_|
