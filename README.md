@@ -75,4 +75,4 @@ near call word.onchez.testnet   add_more_turns --accountId   Your accountId
 
 #### Author
 
-- onchez brian <brianonchezz@gmail.com> [@onchez](https://twitter.com/onchezz_2)
+- onchez brian <brianonchezz@gmail.com> [@onchez2](https://twitter.com/onchez2)
