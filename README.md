@@ -76,3 +76,5 @@ near call word.onchez.testnet   add_more_turns --accountId   Your accountId
 #### Author
 
 - onchez brian <brianonchezz@gmail.com> [@onchez2](https://twitter.com/onchez2)
+
+link to video : 
