@@ -81,6 +81,6 @@ watch how  to call the smart contract
 
 
 link to video : 
-```
-https://www.loom.com/share/0daad8d622154d18acf344d89a631b43?sid=12330c27-af54-4a93-b4ac-65677cd656e1
-```
+[Watch loom video](https://www.loom.com/share/0daad8d622154d18acf344d89a631b43?sid=12330c27-af54-4a93-b4ac-65677cd656e1)
+
+
