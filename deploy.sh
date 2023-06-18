@@ -7,3 +7,5 @@ near deploy \
   --accountId "$1" \
   --initFunction new \
   --initArgs "$(node ./init-args.js)"
+
+  
